@@ -7,6 +7,9 @@ require('dotenv').config();
 // import routes for user authentication
 const authRoutes = require('./routes/auth');
 
+// import routes for reports
+const reportsRoutes = require('./routes/reports');
+
 // create express app
 const app = express();
 
@@ -16,6 +19,9 @@ app.use(express.json());
 
 // route for user authentication
 app.use('/auth', authRoutes);
+
+// route for reports
+app.use('/reports', reportsRoutes);
 
 // health check route for the API
 app.get('/', (req, res) => {
