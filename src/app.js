@@ -10,6 +10,9 @@ const authRoutes = require('./routes/auth');
 // import routes for reports
 const reportsRoutes = require('./routes/reports');
 
+// import routes for trees
+const treesRoutes = require('./routes/trees');
+
 // create express app
 const app = express();
 
@@ -22,6 +25,9 @@ app.use('/auth', authRoutes);
 
 // route for reports
 app.use('/reports', reportsRoutes);
+
+// route for trees
+app.use('/trees', treesRoutes);
 
 // health check route for the API
 app.get('/', (req, res) => {
