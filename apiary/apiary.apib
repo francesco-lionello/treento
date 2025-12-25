@@ -2,5 +2,59 @@ FORMAT: 1A
 HOST: https://api.treento.com
 
 # Treento API
-API REST per la gestione del verde urbano: consultazione alberi/aree verdi, segnalazioni e adozioni.
-Autenticazione via JWT (Bearer Token).
+
+REST API for urban green space management: tree/green space consultation, reporting, and adoption.
+Authentication via JWT (Bearer Token).
+
+## Authentication [/auth]
+
+### Sign up [POST /auth/signup]
+Creates a new user account.
+
++ Request (application/json)
+    + Body
+        {
+            "email": "user1@test.com",
+            "password": "Password123"
+        }
+
++ Response 201
+
+### Login [POST /auth/login]
+Authenticates a user and returns a JWT token.
+
++ Request (application/json)
+    + Body
+        {
+            "email": "user1@test.com",
+            "password": "Password123"
+        }
+
++ Response 200
+
+## Trees [/trees]
+
+### Get all trees [GET /trees]
+Returns the list of trees available in the system.
+
++ Parameters
+    + limit (optional, number) - Limits the number of returned trees
+
++ Response 200 (application/json)
+
+## Reports [/reports]
+
+### Create report [POST /reports]
+Creates a new report. Authentication required.
+
++ Request (application/json)
+    + Headers
+        Authorization: Bearer <JWT_TOKEN>
+
+    + Body
+        {
+            "title": "Broken tree",
+            "location": "Via Roma"
+        }
+
++ Response 201
