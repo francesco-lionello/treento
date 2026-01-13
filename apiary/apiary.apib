@@ -1,5 +1,5 @@
 FORMAT: 1A
-HOST: https://api.treento.com
+HOST: http://localhost:3000 
 
 # Treento API
 
@@ -19,6 +19,28 @@ Creates a new user account.
         }
 
 + Response 201
+    + Body
+        {
+            "message": "User created successfully"
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+            "message": "Email and password are required"
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+            "message": "Invalid email format"
+        }
+
++ Response 409 (application/json)
+    + Body
+        {
+            "message": "User already exists"
+        }
 
 ### Login [POST /auth/login]
 Authenticates a user and returns a JWT token.
@@ -31,6 +53,44 @@ Authenticates a user and returns a JWT token.
         }
 
 + Response 200
+    + Body
+        {
+            "token": "<JWT_TOKEN>"
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+            "message": "Email and password are required"
+        }
+
++ Response 401 (application/json)
+    + Body
+        {
+            "message": "Invalid email or password"
+        }
+
+### Get current user (debug) [GET /auth/me]
+Returns the decoded JWT payload (debug endpoint). Authentication required.
+
++ Request
+    + Headers
+        Authorization: Bearer <JWT_TOKEN>
+
++ Response 200 (application/json)
+    + Body
+        {
+            "user": {
+                "userId": "<USER_ID>",
+                "isAdmin": false
+            }
+        }
+
++ Response 401 (application/json)
+    + Body
+        {
+            "message": "Unauthorized"
+        }
 
 ## Trees [/trees]
 
@@ -41,7 +101,64 @@ Returns the list of trees available in the system.
     + limit (optional, number) - Limits the number of returned trees
 
 + Response 200 (application/json)
+    + Body
+        [
+            {
+                "_id": "694bbe1bbaff55af62295dd2",
+                "species": "Oak",
+                "lat": 46.067,
+                "lng": 11.121,
+                "__v": 0
+            },
+            {
+                "_id": "694bbe1bbaff55af62295dd3",
+                "species": "Pine",
+                "lat": 46.068,
+                "lng": 11.123,
+                "__v": 0
+            }
+        ]
 
++ Response 400 (application/json)
+    + Body
+        {
+            "message": "Invalid query parameter"
+        }
+
++ Response 500 (application/json)
+    + Body
+        {
+            "message": "Server error"
+        }
+
+### Get tree detail [GET /trees/{id}]
+Returns the details of a specific tree by id.
+
++ Parameters
+    + id (required, string) - Tree id (MongoDB ObjectId)
+
++ Response 200 (application/json)
+    + Body
+        {
+            "_id": "694bbe1bbaff55af62295dd2",
+            "species": "Oak",
+            "lat": 46.067,
+            "lng": 11.121,
+            "__v": 0
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+            "message": "Invalid tree id"
+        }
+
++ Response 404 (application/json)
+    + Body
+        {
+            "message": "Tree not found"
+        }
+        
 ## Reports [/reports]
 
 ### Create report [POST /reports]
@@ -50,11 +167,165 @@ Creates a new report. Authentication required.
 + Request (application/json)
     + Headers
         Authorization: Bearer <JWT_TOKEN>
-
     + Body
         {
             "title": "Broken tree",
             "location": "Via Roma"
         }
 
-+ Response 201
++ Response 201 (application/json)
+    + Body
+        {
+            "message": "Report created successfully"
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+            "message": "Missing required fields"
+        }
+
++ Response 401 (application/json)
+    + Body
+        {
+            "message": "Unauthorized"
+        }
+
++ Response 500 (application/json)
+    + Body
+        {
+            "message": "Server error"
+        }
+
+### View my reports [GET /reports/me]
+Returns reports created by the authenticated user.
+
++ Request
+    + Headers
+        Authorization: Bearer <JWT_TOKEN>
+
++ Response 200 (application/json)
+    + Body
+        [
+            {
+                "_id": "695d339a1cd8874b5ba2356f",
+                "title": "Broken tree",
+                "location": "Via Roma",
+                "userId": "69458745fc5470c019c2320",
+                "status": "OPEN",
+                "createdAt": "2026-01-06T16:08:58.734Z",
+                "updatedAt": "2026-01-06T16:08:58.734Z",
+                "__v": 0
+            }
+        ]
+
++ Response 401 (application/json)
+    + Body
+        {
+            "message": "Unauthorized"
+        }
+
++ Response 500 (application/json)
+    + Body
+        {
+            "message": "Server error"
+        }
+
+### Admin list reports [GET /reports]
+Returns all reports (admin only).
+
++ Request
+    + Headers
+        Authorization: Bearer <ADMIN_JWT_TOKEN>
+
++ Response 200 (application/json)
+    + Body
+        [
+            {
+                "_id": "695d339a1cd8874b5ba2356f",
+                "title": "Broken tree",
+                "location": "Via Roma",
+                "userId": "69458745fc5470c019c2320",
+                "status": "OPEN",
+                "createdAt": "2026-01-06T16:08:58.734Z",
+                "updatedAt": "2026-01-06T16:08:58.734Z",
+                "__v": 0
+            }
+        ]
+
++ Response 401 (application/json)
+    + Body
+        {
+            "message": "Unauthorized"
+        }
+
++ Response 403 (application/json)
+    + Body
+        {
+            "message": "Forbidden"
+        }
+
+### Admin update report status [PATCH /reports/{id}/status]
+Updates the status of a report (admin only).
+
+Allowed statuses: `OPEN`, `IN_PROGRESS`, `CLOSED`.
+
++ Parameters
+    + id (required, string) - Report id (MongoDB ObjectId)
+
++ Request (application/json)
+    + Headers
+        Authorization: Bearer <ADMIN_JWT_TOKEN>
+    + Body
+        {
+            "status": "IN_PROGRESS"
+        }
+
++ Response 200 (application/json)
+    + Body
+        {
+            "_id": "695d339a1cd8874b5ba2356f",
+            "title": "Broken tree",
+            "location": "Via Roma",
+            "userId": "69458745fc5470c019c2320",
+            "status": "IN_PROGRESS",
+            "createdAt": "2026-01-06T16:08:58.734Z",
+            "updatedAt": "2026-01-06T16:10:20.112Z",
+            "__v": 0
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+            "message": "Invalid report id"
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+            "message": "Invalid status"
+        }
+
++ Response 401 (application/json)
+    + Body
+        {
+            "message": "Unauthorized"
+        }
+
++ Response 403 (application/json)
+    + Body
+        {
+            "message": "Forbidden"
+        }
+
++ Response 404 (application/json)
+    + Body
+        {
+            "message": "Report not found"
+        }
+
++ Response 500 (application/json)
+    + Body
+        {
+            "message": "Server error"
+        }
