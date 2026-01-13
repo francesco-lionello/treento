@@ -1,6 +1,6 @@
 // using express framework for server creation
 const express = require('express');
-const moongose = require('mongoose');
+const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -35,7 +35,7 @@ app.get('/', (req, res) => {
 });
 
 // DB connection setup with MongoDB via Mongoose
-moongose
+mongoose
     .connect(process.env.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error('MongoDB connection error:', err));
