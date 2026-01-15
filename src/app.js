@@ -13,6 +13,9 @@ const reportsRoutes = require('./routes/reports');
 // import routes for trees
 const treesRoutes = require('./routes/trees');
 
+// import routes for adoptions
+const adoptionsRoutes = require('./routes/adoptions');
+
 // create express app
 const app = express();
 
@@ -28,6 +31,9 @@ app.use('/reports', reportsRoutes);
 
 // route for trees
 app.use('/trees', treesRoutes);
+
+// route for adoptions
+app.use('/adoptions', adoptionsRoutes);
 
 // health check route for the API
 app.get('/', (req, res) => {

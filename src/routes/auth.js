@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
     });
   }
   
-  const adminEmails = (process.env.ADMIN_EMAILS || '')
+  const adminEmails = (process.env.ADMIN_EMAIL || '')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
