@@ -23,6 +23,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// static files for the frontend 
+app.use('/', express.static(process.env.FRONTEND || 'static'));
+app.use('/', express.static('static'));
+
 // route for user authentication
 app.use('/auth', authRoutes);
 
@@ -35,8 +39,9 @@ app.use('/trees', treesRoutes);
 // route for adoptions
 app.use('/adoptions', adoptionsRoutes);
 
+
 // health check route for the API
-app.get('/', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({message: 'Treento API running'});
 });
 

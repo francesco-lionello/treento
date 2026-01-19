@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Treento - Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .row { display: flex; gap: 24px; flex-wrap: wrap; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; width: 380px; }
+    input, button, select { width: 100%; padding: 8px; margin: 6px 0; }
+    pre { background: #f6f6f6; padding: 12px; overflow: auto; }
+    small { color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Treento - Frontend demo (HTML + JS)</h1>
+  <p><small>Demo: login, trees, reports, adoptions.</small></p>
+
+  <div class="row">
+    <div class="card">
+      <h2>Auth</h2>
+
+      <h3>Sign up</h3>
+      <input id="suEmail" placeholder="email" value="user1@test.com">
+      <input id="suPassword" placeholder="password" type="password" value="Password123">
+      <button onclick="signup()">POST /auth/signup</button>
+
+      <h3>Login</h3>
+      <input id="liEmail" placeholder="email" value="user1@test.com">
+      <input id="liPassword" placeholder="password" type="password" value="Password123">
+      <button onclick="login()">POST /auth/login</button>
+
+      <p><b>Token:</b> <span id="tokenStatus">not set</span></p>
+      <button onclick="logout()">Logout (clear token)</button>
+
+      <h3>Debug /auth/me</h3>
+      <button onclick="me()">GET /auth/me</button>
+    </div>
+
+    <div class="card">
+      <h2>Trees</h2>
+      <input id="treesLimit" placeholder="limit (optional)" value="3">
+      <button onclick="loadTrees()">GET /trees</button>
+      <p><b>Selected treeId:</b> <span id="selectedTreeId">-</span></p>
+      <button onclick="loadTreeDetail()">GET /trees/:id</button>
+    </div>
+
+    <div class="card">
+      <h2>Reports</h2>
+
+      <h3>Create report</h3>
+      <input id="repTitle" placeholder="title" value="Broken tree">
+      <input id="repLocation" placeholder="location" value="Via Roma">
+      <button onclick="createReport()">POST /reports</button>
+
+      <h3>My reports</h3>
+      <button onclick="loadMyReports()">GET /reports/me</button>
+
+      <h3>Admin</h3>
+      <button onclick="adminListReports()">GET /reports (admin)</button>
+
+      <h4>Update status (admin)</h4>
+      <input id="adminReportId" placeholder="reportId (from list)">
+      <select id="adminStatus">
+        <option value="OPEN">OPEN</option>
+        <option value="IN_PROGRESS" selected>IN_PROGRESS</option>
+        <option value="CLOSED">CLOSED</option>
+      </select>
+      <button onclick="adminUpdateReportStatus()">PATCH /reports/:id/status</button>
+    </div>
+
+    <div class="card">
+      <h2>Adoptions</h2>
+
+      <h3>Create adoption request</h3>
+      <p><small>Usa il treeId selezionato da Trees.</small></p>
+      <button onclick="createAdoption()">POST /adoptions</button>
+
+      <h3>My adoptions</h3>
+      <button onclick="loadMyAdoptions()">GET /adoptions/me</button>
+
+      <h3>Admin</h3>
+      <button onclick="adminListAdoptions()">GET /adoptions (admin)</button>
+
+      <h4>Update adoption status (admin)</h4>
+      <input id="adminAdoptionId" placeholder="adoptionId (from list)">
+      <select id="adminAdoptionStatus">
+        <option value="PENDING">PENDING</option>
+        <option value="APPROVED" selected>APPROVED</option>
+        <option value="REJECTED">REJECTED</option>
+      </select>
+      <button onclick="adminUpdateAdoptionStatus()">PATCH /adoptions/:id/status</button>
+    </div>
+  </div>
+
+  <h2>Output</h2>
+  <pre id="out">Ready.</pre>
+
+  <script src="script.js"></script>
+</body>
+</html>
