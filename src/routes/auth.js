@@ -69,13 +69,18 @@ router.post('/login', async (req, res) => {
       message: 'Invalid email or password' 
     });
   }
+  
+  const adminEmails = (process.env.ADMIN_EMAIL || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+  const isAdmin = (user.email === process.env.ADMIN_EMAIL);
 
   // Generate JWT token
-  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+  const token = jwt.sign({ userId: user._id, isAdmin }, process.env.JWT_SECRET);
 
-  return res.status(200).json({ 
-    token 
-  });
+  return res.status(200).json({ token });
 });
 
 router.get('/me', auth, (req, res) => {

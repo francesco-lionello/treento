@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Tree = require('../models/Tree');
+const mongoose = require('mongoose');
 
 // GET /trees
 router.get('/', async (req, res) => {
@@ -27,6 +28,29 @@ router.get('/', async (req, res) => {
     return res.status(200).json(trees);
   } catch (err) {
     console.error('TREES ERROR:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /trees/:id
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // invalid id
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid tree ID' });
+    }
+
+    // find tree by ID
+    const tree = await Tree.findById(id);
+    if (!tree) {
+      return res.status(404).json({ message: 'Tree not found' });
+    }
+
+    return res.status(200).json(tree);
+  } catch (err) {
+    console.error('TREE BY ID ERROR:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 });
