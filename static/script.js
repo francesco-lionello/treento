@@ -1,12 +1,15 @@
-// Config  
 const HOST = 'https://treento.onrender.com';
 
-// Auth token
+// Token JWT (in memoria)
 let TOKEN = null;
+
+// Mappa Leaflet (inizializzata dopo il DOM)
+let map;
 
 function setOut(obj) {
   const out = document.getElementById('out');
-  out.textContent = (typeof obj === 'string') ? obj : JSON.stringify(obj, null, 2);
+  out.textContent =
+    typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
 }
 
 function setToken(token) {
@@ -16,7 +19,7 @@ function setToken(token) {
 
 function getAuthHeaders() {
   if (!TOKEN) return {};
-  return { 'Authorization': `Bearer ${TOKEN}` };
+  return { Authorization: `Bearer ${TOKEN}` };
 }
 
 async function api(path, { method = 'GET', body, auth = false } = {}) {
@@ -33,13 +36,19 @@ async function api(path, { method = 'GET', body, auth = false } = {}) {
 
     const text = await res.text();
     let data;
-    try { data = text ? JSON.parse(text) : {}; }
-    catch { data = { raw: text }; }
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = { raw: text };
+    }
 
     return { status: res.status, data };
   } catch (err) {
     console.error('FETCH ERROR:', err);
-    return { status: 0, data: { message: 'Network error / server unreachable', error: String(err) } };
+    return {
+      status: 0,
+      data: { message: 'Network error / server unreachable' }
+    };
   }
 }
 
@@ -47,16 +56,24 @@ async function api(path, { method = 'GET', body, auth = false } = {}) {
 async function signup() {
   const email = document.getElementById('suEmail').value;
   const password = document.getElementById('suPassword').value;
-  const r = await api('/auth/signup', { method: 'POST', body: { email, password } });
+  const r = await api('/auth/signup', {
+    method: 'POST',
+    body: { email, password }
+  });
   setOut(r);
 }
 
 async function login() {
   const email = document.getElementById('liEmail').value;
   const password = document.getElementById('liPassword').value;
-  const r = await api('/auth/login', { method: 'POST', body: { email, password } });
+  const r = await api('/auth/login', {
+    method: 'POST',
+    body: { email, password }
+  });
 
-  if (r.status === 200 && r.data && r.data.token) setToken(r.data.token);
+  if (r.status === 200 && r.data?.token) {
+    setToken(r.data.token);
+  }
   setOut(r);
 }
 
@@ -74,26 +91,83 @@ async function me() {
 async function loadTrees() {
   const limit = document.getElementById('treesLimit').value.trim();
   const url = limit ? `/trees?limit=${encodeURIComponent(limit)}` : '/trees';
-  const r = await api(url);
 
-  if (r.status === 200 && Array.isArray(r.data) && r.data.length > 0 && r.data[0]._id) {
-    document.getElementById('selectedTreeId').textContent = r.data[0]._id;
-  }
+  const r = await api(url);
   setOut(r);
+
+  const ul = document.getElementById('treesList');
+  ul.innerHTML = '';
+
+  if (r.status !== 200 || !Array.isArray(r.data)) return;
+
+  // Lista alberi
+  r.data.forEach(tree => {
+    const li = document.createElement('li');
+    li.style.cursor = 'pointer';
+
+    li.innerHTML = `
+      <b>${tree.species}</b><br>
+      <small>
+        ${tree.scientificName || '—'}<br>
+        Lat: ${tree.lat.toFixed(4)}, Lng: ${tree.lng.toFixed(4)}
+      </small>
+    `;
+
+    li.onclick = () => {
+      document.getElementById('selectedTreeId').textContent = tree._id;
+    };
+
+    ul.appendChild(li);
+  });
+
+  // Se la mappa non è pronta, esco
+  if (!map) return;
+
+  // Rimuovo marker precedenti
+  map.eachLayer(layer => {
+    if (layer instanceof L.Marker) map.removeLayer(layer);
+  });
+
+  // Aggiungo marker
+  r.data.forEach(tree => {
+    L.marker([tree.lat, tree.lng])
+      .addTo(map)
+      .bindPopup(`
+        <b>${tree.species}</b><br>
+        ${tree.scientificName || ''}
+      `);
+  });
 }
 
 async function loadTreeDetail() {
   const id = document.getElementById('selectedTreeId').textContent.trim();
-  if (!id || id === '-') return setOut('Select a tree first (GET /trees).');
+  if (!id || id === '-') return setOut('Select a tree first.');
+
   const r = await api(`/trees/${encodeURIComponent(id)}`);
-  setOut(r);
+
+  if (r.status === 200 && r.data) {
+    setOut({
+      id: r.data._id,
+      species: r.data.species,
+      scientificName: r.data.scientificName,
+      latitude: r.data.lat,
+      longitude: r.data.lng
+    });
+  } else {
+    setOut(r);
+  }
 }
 
 // Reports
 async function createReport() {
   const title = document.getElementById('repTitle').value;
   const location = document.getElementById('repLocation').value;
-  const r = await api('/reports', { method: 'POST', body: { title, location }, auth: true });
+
+  const r = await api('/reports', {
+    method: 'POST',
+    body: { title, location },
+    auth: true
+  });
   setOut(r);
 }
 
@@ -123,8 +197,15 @@ async function adminUpdateReportStatus() {
 // Adoptions
 async function createAdoption() {
   const treeId = document.getElementById('selectedTreeId').textContent.trim();
-  if (!treeId || treeId === '-') return setOut('Select a tree first (GET /trees).');
-  const r = await api('/adoptions', { method: 'POST', body: { treeId }, auth: true });
+  if (!treeId || treeId === '-') {
+    return setOut('Select a tree first.');
+  }
+
+  const r = await api('/adoptions', {
+    method: 'POST',
+    body: { treeId },
+    auth: true
+  });
   setOut(r);
 }
 
@@ -150,3 +231,13 @@ async function adminUpdateAdoptionStatus() {
   });
   setOut(r);
 }
+
+// Inizializzazione mappa
+
+document.addEventListener('DOMContentLoaded', () => {
+  map = L.map('map').setView([46.07, 11.12], 12);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+});
