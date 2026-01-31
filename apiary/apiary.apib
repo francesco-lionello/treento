@@ -1,10 +1,13 @@
 FORMAT: 1A
-HOST: http://treento.onrender.com
+HOST: https://treento.onrender.com/
 
 # Treento API
 
 REST API for urban green space management: tree/green space consultation, reporting, and adoption.
 Authentication via JWT (Bearer Token).
+
+Protected endpoints require Authorization: Bearer <JWT_TOKEN>.
+Admin endpoints require a valid token for an admin account.
 
 ## Authentication [/auth]
 
@@ -104,17 +107,27 @@ Returns the list of trees available in the system.
     + Body
         [
             {
-                "_id": "694bbe1bbaff55af62295dd2",
-                "species": "Oak",
-                "lat": 46.067,
-                "lng": 11.121,
+                "_id": "697b411cc780dee858429cc6",
+                "species": "Tiglio selvatico",
+                "scientificName": "Tilia cordata Mill.",
+                "lat": 46.07970277777778,
+                "lng": 11.543433333333333,
                 "__v": 0
             },
             {
-                "_id": "694bbe1bbaff55af62295dd3",
-                "species": "Pine",
-                "lat": 46.068,
-                "lng": 11.123,
+                "_id": "697b411cc780dee858429ccf",
+                "species": "Larice",
+                "scientificName": "Larix decidua Mill.",
+                "lat": 46.491391666666665,
+                "lng": 11.76961388888889,
+                "__v": 0
+            },
+            {
+                "_id": "697b411cc780dee858429cd4",
+                "species": "Pino silvestre",
+                "scientificName": "Insieme omogeneo di Pinus sylvestris L.",
+                "lat": 46.28402777777777,
+                "lng": 11.396266666666666,
                 "__v": 0
             }
         ]
@@ -140,17 +153,18 @@ Returns the details of a specific tree by id.
 + Response 200 (application/json)
     + Body
         {
-            "_id": "694bbe1bbaff55af62295dd2",
-            "species": "Oak",
-            "lat": 46.067,
-            "lng": 11.121,
+            "_id": "697b411cc780dee858429cc6",
+            "species": "Tiglio selvatico",
+            "scientificName": "Tilia cordata Mill.",
+            "lat": 46.07970277777778,
+            "lng": 11.543433333333333,
             "__v": 0
         }
 
 + Response 400 (application/json)
     + Body
         {
-            "message": "Invalid tree id"
+            "message": "Invalid tree ID"
         }
 
 + Response 404 (application/json)
@@ -158,7 +172,7 @@ Returns the details of a specific tree by id.
         {
             "message": "Tree not found"
         }
-
+        
 ## Reports [/reports]
 
 ### Create report [POST /reports]
@@ -167,7 +181,6 @@ Creates a new report. Authentication required.
 + Request (application/json)
     + Headers
         Authorization: Bearer <JWT_TOKEN>
-
     + Body
         {
             "title": "Broken tree",
@@ -209,10 +222,20 @@ Returns reports created by the authenticated user.
     + Body
         [
             {
+                "_id": "6965530792bc2e03a0590393",
+                "title": "Broken tree",
+                "location": "Via Roma",
+                "userId": "69458745fc5b470c019c2320",
+                "status": "IN_PROGRESS",
+                "createdAt": "2026-01-12T20:01:11.602Z",
+                "updatedAt": "2026-01-12T20:40:52.068Z",
+                "__v": 0
+            },
+            {
                 "_id": "695d339a1cd8874b5ba2356f",
                 "title": "Broken tree",
                 "location": "Via Roma",
-                "userId": "69458745fc5470c019c2320",
+                "userId": "69458745fc5b470c019c2320",
                 "status": "OPEN",
                 "createdAt": "2026-01-06T16:08:58.734Z",
                 "updatedAt": "2026-01-06T16:08:58.734Z",
@@ -243,10 +266,20 @@ Returns all reports (admin only).
     + Body
         [
             {
+                "_id": "6965530792bc2e03a0590393",
+                "title": "Broken tree",
+                "location": "Via Roma",
+                "userId": "69458745fc5b470c019c2320",
+                "status": "IN_PROGRESS",
+                "createdAt": "2026-01-12T20:01:11.602Z",
+                "updatedAt": "2026-01-12T20:40:52.068Z",
+                "__v": 0
+            },
+            {
                 "_id": "695d339a1cd8874b5ba2356f",
                 "title": "Broken tree",
                 "location": "Via Roma",
-                "userId": "69458745fc5470c019c2320",
+                "userId": "69458745fc5b470c019c2320",
                 "status": "OPEN",
                 "createdAt": "2026-01-06T16:08:58.734Z",
                 "updatedAt": "2026-01-06T16:08:58.734Z",
@@ -265,6 +298,12 @@ Returns all reports (admin only).
         {
             "message": "Forbidden"
         }
+        
++ Response 500 (application/json)
+    + Body
+        {
+            "message": "Server error"
+        }        
 
 ### Admin update report status [PATCH /reports/{id}/status]
 Updates the status of a report (admin only).
@@ -288,7 +327,7 @@ Allowed statuses: `OPEN`, `IN_PROGRESS`, `CLOSED`.
             "_id": "695d339a1cd8874b5ba2356f",
             "title": "Broken tree",
             "location": "Via Roma",
-            "userId": "69458745fc5470c019c2320",
+            "userId": "69458745fc5b470c019c2320",
             "status": "IN_PROGRESS",
             "createdAt": "2026-01-06T16:08:58.734Z",
             "updatedAt": "2026-01-06T16:10:20.112Z",
@@ -329,4 +368,197 @@ Allowed statuses: `OPEN`, `IN_PROGRESS`, `CLOSED`.
     + Body
         {
             "message": "Server error"
+        }
+        
+## Adoptions [/adoptions]
+
+### Create adoption request [POST /adoptions]
+Creates an adoption request for a tree. Authentication required.
+
++ Request (application/json)
+    + Headers
+        Authorization: Bearer <JWT_TOKEN>
+    + Body
+        {
+          "treeId": "697b411cc780dee858429cc6"
+        }
+
++ Response 201 (application/json)
+    + Body
+        {
+          "message": "Adoption request created successfully"
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+          "message": "Missing required fields"
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+          "message": "Invalid tree ID"
+        }
+
++ Response 401 (application/json)
+    + Body
+        {
+          "message": "Unauthorized"
+        }
+
+### Get all adoption requests (admin) [GET /adoptions]
+Returns all adoption requests (admin only).
+
++ Request
+    + Headers
+        Authorization: Bearer <ADMIN_JWT_TOKEN>
+
++ Response 200 (application/json)
+    + Body
+        [
+            {
+                "_id": "69676977641746e3c953d24c",
+                "treeId": {
+                        "_id": "697b411cc780dee858429cc6",
+                        "species": "Tiglio selvatico",
+                        "scientificName": "Tilia cordata Mill.",
+                        "lat": 46.07970277777778,
+                        "lng": 11.543433333333333,
+                        "__v": 0
+                },
+                "userId": {
+                    "_id": "...",
+                    "email": "user1@test.com"
+                },
+                "status": "APPROVED",
+                "createdAt": "2026-01-14T10:01:27.883Z",
+                "updatedAt": "2026-01-14T10:57:11.615Z",
+                "__v": 0
+            },
+            {
+                "_id": "6967935b211dca582027194a",
+                "treeId": {
+                    "_id": "697b411cc780dee858429cc6",
+                    "species": "Tiglio selvatico",
+                    "scientificName": "Tilia cordata Mill.",
+                    "lat": 46.07970277777778,
+                    "lng": 11.543433333333333,
+                    "__v": 0
+                },
+                "userId": {
+                    "_id": "...",
+                    "email": "user1@test.com"
+                },
+                "status": "PENDING",
+                "createdAt": "2026-01-14T13:00:11.656Z",
+                "updatedAt": "2026-01-14T13:00:11.656Z",
+                "__v": 0
+            }
+        ]
+
++ Response 401 (application/json)
+    + Body
+        {
+          "message": "Unauthorized"
+        }
+
++ Response 403 (application/json)
+    + Body
+        {
+          "message": "Forbidden"
+        }
+        
+
+### Get my adoption requests [GET /adoptions/me]
+Returns adoption requests created by the authenticated user.
+
++ Request
+    + Headers
+        Authorization: Bearer <JWT_TOKEN>
+
++ Response 200 (application/json)
+    + Body
+        [
+          {
+            "_id": "69676977641746e3c953d24c",
+            "treeId": {
+                        "_id": "697b411cc780dee858429cc6",
+                        "species": "Tiglio selvatico",
+                        "scientificName": "Tilia cordata Mill.",
+                        "lat": 46.07970277777778,
+                        "lng": 11.543433333333333,
+                        "__v": 0
+                },
+                "userId": "69458745fc5b470c019c2320",
+                "status": "APPROVED",
+                "createdAt": "2026-01-14T10:01:27.883Z",
+                "updatedAt": "2026-01-14T10:57:11.615Z",
+                "__v": 0
+            }
+        ]
+
++ Response 401 (application/json)
+    + Body
+        {
+          "message": "Unauthorized"
+        }
+
+
+### Update adoption status (admin) [PATCH /adoptions/{id}/status]
+Updates adoption request status (admin only).
+
+Allowed status values: `PENDING`, `APPROVED`, `REJECTED`.
+
++ Parameters
+    + id (required, string) - Adoption id
+
++ Request (application/json)
+    + Headers
+        Authorization: Bearer <ADMIN_JWT_TOKEN>
+    + Body
+        {
+          "status": "APPROVED"
+        }
+
++ Response 200 (application/json)
+    + Body
+        {
+            "_id": "69676977641746e3c953d24c",
+            "treeId": "697b411cc780dee858429cc6",
+            "userId": "69458745fc5b470c019c2320",
+            "status": "APPROVED",
+            "createdAt": "2026-01-14T10:01:27.883Z",
+            "updatedAt": "2026-01-14T13:09:18.948Z",
+            "__v": 0
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+          "message": "Invalid adoption id"
+        }
+
++ Response 400 (application/json)
+    + Body
+        {
+          "message": "Invalid status"
+        }
+
++ Response 401 (application/json)
+    + Body
+        {
+          "message": "Unauthorized"
+        }
+
++ Response 403 (application/json)
+    + Body
+        {
+          "message": "Forbidden"
+        }
+
++ Response 404 (application/json)
+    + Body
+        {
+          "message": "Adoption not found"
         }

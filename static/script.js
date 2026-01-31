@@ -1,9 +1,9 @@
 const HOST = 'https://treento.onrender.com';
 
-// Token JWT (in memoria)
+// Token JWT 
 let TOKEN = null;
 
-// Mappa Leaflet (inizializzata dopo il DOM)
+// Map Leaflet 
 let map;
 
 function setOut(obj) {
@@ -100,7 +100,7 @@ async function loadTrees() {
 
   if (r.status !== 200 || !Array.isArray(r.data)) return;
 
-  // Lista alberi
+  // List trees
   r.data.forEach(tree => {
     const li = document.createElement('li');
     li.style.cursor = 'pointer';
@@ -120,15 +120,15 @@ async function loadTrees() {
     ul.appendChild(li);
   });
 
-  // Se la mappa non è pronta, esco
+  // If map not ready, skip
   if (!map) return;
 
-  // Rimuovo marker precedenti
+  // Remove existing markers
   map.eachLayer(layer => {
     if (layer instanceof L.Marker) map.removeLayer(layer);
   });
 
-  // Aggiungo marker
+  // add marker
   r.data.forEach(tree => {
     L.marker([tree.lat, tree.lng])
       .addTo(map)
@@ -232,7 +232,7 @@ async function adminUpdateAdoptionStatus() {
   setOut(r);
 }
 
-// Inizializzazione mappa
+// Initialize map 
 
 document.addEventListener('DOMContentLoaded', () => {
   map = L.map('map').setView([46.07, 11.12], 12);
